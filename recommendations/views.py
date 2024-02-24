@@ -1,8 +1,9 @@
-from django.shortcuts import render
-from .models import UserGameInteraction, Game
-from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.http import HttpResponse
+from django.views.generic import View
+import os
 
-@login_required
-def game_recommendations(request):
-    user = request.user
-    recommendations = Game.objects.exclude(usergameinteraction__user=user).order_by('-total_hours_played')[:10] 
+class SPAView(View):
+    def get(self, request, *args, **kwargs):
+        with open(os.path.join(settings.REACT_APP_DIR, 'build', 'index.html')) as file:
+            return HttpResponse(file.read(), content_type='text/html')

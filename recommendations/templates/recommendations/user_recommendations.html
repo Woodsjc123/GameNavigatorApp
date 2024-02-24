@@ -1,0 +1,11 @@
+<!-- recommendations/templates/recommendations/user_recommendations.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Your Recommendations</h1>
+<ul>
+    {% for game in recommended_games %}
+    <li>{{ game }}</li> 
+    {% endfor %}
+</ul>
+{% endblock %}
