@@ -1,54 +1,25 @@
 import pandas as pd
-from datetime import datetime
 import numpy as np
 from scipy.stats import spearmanr
-from sklearn.preprocessing import MultiLabelBinarizer
 import networkx as nx
 import community as community_louvain
 
 
-games_data = {
-    'title': ['Game A', 'Game B', 'Game C', 'Game D', 'Game E', 'Game F'],
-    'genres': [
-        ['Action', 'Adventure'], 
-        ['Adventure', 'Puzzle'], 
-        ['Action', 'RPG'], 
-        ['Horror', 'Survival'], 
-        ['Action', 'Adventure'], 
-        ['Puzzle', 'Strategy']
-    ],
-    'platforms': [
-        ['PC', 'Console'], 
-        ['PC'], 
-        ['Console', 'Mobile'], 
-        ['PC', 'Mobile'], 
-        ['Console'], 
-        ['PC', 'Console', 'Mobile']
-    ],
-    'ratings': [4.5, 4.0, 5.0, 3.5, 4.8, 4.2],
-    'release_date': [
-        datetime(2020, 1, 1), 
-        datetime(2020, 6, 1), 
-        datetime(2021, 7, 15), 
-        datetime(2021, 10, 30), 
-        datetime(2022, 3, 22),
-        datetime(2021, 12, 1)
-    ]
-}
+games_df = pd.read_csv('merged_data.csv')
 
-games_df = pd.DataFrame(games_data)
+games_df.head()
+
+boolean_columns = [col for col in games_df.columns if 'Category' in col or 'GenreIs' in col or 'IsFree' in col]
+for col in boolean_columns:
+    games_df[col] = games_df[col].astype(int)
 
 
-mlb_genres = MultiLabelBinarizer()
-genre_matrix = mlb_genres.fit_transform(games_df['genres'])
+games_df['hours'] = games_df['hours'] / games_df['hours'].max()
+games_df['PriceFinal'] = games_df['PriceFinal'] / games_df['PriceFinal'].max()
 
 
-features_matrix = np.hstack([
-    genre_matrix,
-    games_df[['ratings']].values / games_df['ratings'].max(),
-    (games_df['release_date'].dt.year.values[:, None] - games_df['release_date'].dt.year.min()) /
-    (games_df['release_date'].dt.year.max() - games_df['release_date'].dt.year.min())
-])
+features = [col for col in games_df.columns if col not in ['userID', 'Title']]
+features_matrix = games_df[features].values
 
 
 spearman_correlation_matrix = np.zeros((features_matrix.shape[0], features_matrix.shape[0]))
@@ -65,7 +36,6 @@ for i in range(features_matrix.shape[0]):
                 spearman_correlation_matrix[i, j] = 0
 
 
-print(spearman_correlation_matrix)
 
 similarity_graph = nx.from_numpy_array(spearman_correlation_matrix)
 partition = community_louvain.best_partition(similarity_graph)
@@ -81,7 +51,8 @@ for community in communities:
     representative_games[community] = games_df.iloc[most_representative]['title']
 
 
-def get_recommendations(game_title, user_platforms, top_n=5):
+def get_recommendations(game_title, top_n=5):
+
     game_index = games_df[games_df['title'] == game_title].index[0]
     game_community = partition[game_index]
     
@@ -89,13 +60,13 @@ def get_recommendations(game_title, user_platforms, top_n=5):
     community_games_indices = [game for game, community in partition.items() if community == game_community]    
 
 
-    available_games_indices = [
-        index for index in community_games_indices 
-        if any(platform in user_platforms for platform in games_df.iloc[index]['platforms'])
-    ]
+    # available_games_indices = [
+    #     index for index in community_games_indices 
+    #     if any(platform in user_platforms for platform in games_df.iloc[index]['platforms'])
+    # ]
 
     scores = []
-    for game in available_games_indices:
+    for game in community_games_indices:
         if game != game_index:
             score = spearman_correlation_matrix[game_index, game]
             scores.append((game, score))
@@ -110,5 +81,5 @@ def get_recommendations(game_title, user_platforms, top_n=5):
     return recommended_games['title'].tolist()
 
 
-recommended_games = get_recommendations('Game A', 'PC')
+recommended_games = get_recommendations('the elder scrolls v skyrim')
 print(recommended_games)
