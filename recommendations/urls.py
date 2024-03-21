@@ -1,7 +1,11 @@
 from django.urls import path
-from . import views
+from .views import SPAView, GameListAPIView
+from .views import LoginAPIView
+from .views import UserRegistrationAPIView
 
 urlpatterns = [
-    # path('home/', views.home, name='home'),
-    # path('recommendations/', views.user_recommendations, name='user_recommendations'),
+    path('api/games/', GameListAPIView.as_view(), name='game-list'),
+    path('', SPAView.as_view()),
+    path('api/login/', LoginAPIView.as_view(), name='api_login'),
+    path('api/register/', UserRegistrationAPIView.as_view(), name='api_register'),
 ]

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from recommendations.models import Game, UserGameInteraction
+from recommendations.models import Game, UserGameInteraction, models
 
 class Command(BaseCommand):
     help = 'Calculates and updates total hours played for each game'

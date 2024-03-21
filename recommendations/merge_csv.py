@@ -1,6 +1,6 @@
 import pandas as pd
 
-columns_to_keep = [
+columns = [
     'userID', 'Title', 'hours',
     'RequiredAge', 'IsFree',
     'CategorySinglePlayer', 'CategoryMultiplayer', 'CategoryCoop',
@@ -14,14 +14,13 @@ columns_to_keep = [
 ]
 
 
-
 def clean_title(title):
     title = str(title).lower()
     for char in [":", ";", "'", "."]:
         title = title.replace(char, "")
     return title
 
-df_users = pd.read_csv('C:\\Users\\Woods\\University\\FYP\\clean.csv')  
+df_users = pd.read_csv('C:\\Users\\John\\Desktop\\Notebooks\\clean.csv')  
 df_games = pd.read_csv('C:\\Users\\Woods\\University\\FYP\\games-features.csv') 
 
 
@@ -44,7 +43,7 @@ df_final = pd.concat([df_merged_primary.dropna(subset=['QueryName']), df_seconda
 
 df_final = df_final.loc[:,~df_final.columns.duplicated()].copy()
 
-df_final_selected = df_final[columns_to_keep].copy()
+df_final_selected = df_final[columns].copy()
 
 
 df_final_selected = df_final_selected.drop_duplicates()
