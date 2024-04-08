@@ -45,7 +45,7 @@ function Login() {
   };
 
   return (
-    <div className="form-container">
+    <div className="form">
       <h1>Log in</h1>
       <form onSubmit={handleSubmit}>
         <input
@@ -63,7 +63,7 @@ function Login() {
           required
         />
         <button type="submit">Login</button>
-        <button type="button" onClick={() => {/* handle forgot password logic */}}>Forgot Password?</button>
+        <button type="button" onClick={() => navigate('/forgot-password')}>Forgot Password?</button>
       </form>
     </div>
   );

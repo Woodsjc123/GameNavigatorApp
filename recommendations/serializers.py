@@ -1,8 +1,17 @@
 from rest_framework import serializers
 from .models import Game
+from .models import UserProfile
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ['id', 'title', 'genres', 'release_date', 'rating', 'platforms', 'total_hours_played']
-        depth = 1
+        fields = '__all__'
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    played_games = GameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+
