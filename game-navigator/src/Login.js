@@ -63,7 +63,7 @@ function Login() {
           required
         />
         <button type="submit">Login</button>
-        <button type="button" onClick={() => {/* handle forgot password logic */}}>Forgot Password?</button>
+        <button type="button" onClick={() => {}}>Forgot Password?</button>
       </form>
     </div>
   );
