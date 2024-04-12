@@ -8,10 +8,10 @@ def get_playtime(user_id, df):
 
 def load_data():
 
-    with open('F:\\TUD\\FYP\\recommendations\\json\\community_partition_100.json', 'r') as file:
+    with open('F:\\TUD\\FYP\\recommendations\\json\\community_partition.json', 'r') as file:
         partition = json.load(file)
 
-    with open('F:\\TUD\\FYP\\recommendations\\json\\community_pagerank_scores_100.json', 'r') as file:
+    with open('F:\\TUD\\FYP\\recommendations\\json\\community_pagerank_scores.json', 'r') as file:
         pagerank_scores = json.load(file)
 
     return partition, pagerank_scores
