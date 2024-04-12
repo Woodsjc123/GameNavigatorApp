@@ -1,49 +1,64 @@
-from django.contrib.auth.models import User
 import pandas as pd
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.model_selection import train_test_split
+import json
+
+def get_playtime(user_id, df):
+    playtime = df[df['userID'] == user_id]
+    return dict(zip(playtime['title'], playtime['hours']))
 
 
-# Collaborative based on play count
-df = pd.read_csv('C:\\Users\\John\\Desktop\\Notebooks\\clean.csv', header=0, names=["User", "Game", "PlayTime"])
+def load_data():
 
-unique_users = df['User'].unique()
-train_users, test_users = train_test_split(unique_users, test_size=0.2, random_state=27)
+    with open('F:\\TUD\\FYP\\recommendations\\json\\community_partition_100.json', 'r') as file:
+        partition = json.load(file)
 
-train_df = df[df['User'].isin(train_users)]
-test_df = df[df['User'].isin(test_users)]
+    with open('F:\\TUD\\FYP\\recommendations\\json\\community_pagerank_scores_100.json', 'r') as file:
+        pagerank_scores = json.load(file)
 
-
-matrix = train_df.pivot_table(index='User', columns='Game', values='PlayTime', fill_value=0)
-matrix_std = matrix.apply(lambda x: (x - np.mean(x)) / (np.max(x) - np.min(x)), axis=1)
-cosine_sim = cosine_similarity(matrix_std)
-cosine_sim_df = pd.DataFrame(cosine_sim, index=matrix_std.index, columns=matrix_std.index)
+    return partition, pagerank_scores
 
 
-def generate_recommendations(user_id, top_n=5):
-    if user_id not in cosine_sim_df.index:
-        print(f"User {user_id} not found.")
-        return []
-
-    similar_users = cosine_sim_df[user_id].sort_values(ascending=False)[1:top_n+1]
+def get_recommendations(playtime, pagerank_scores, partition, games_df, top_n=5):
+    user_index = [  # Match titles found in games_df and converting to lowercase
+        games_df.index[games_df['title'].str.lower() == game_title.lower()].tolist()[0] for game_title in playtime.keys()
+        if not games_df[games_df['title'].str.lower() == game_title.lower()].empty
+    ]
     
+    user_communities = set(partition[str(game_index)] for game_index in user_index if str(game_index) in partition)
     
-    recommended_games = pd.Series(dtype=np.float64)
-    for similar_user in similar_users.index:
-        similar_user_games = matrix.loc[similar_user]
-        recommended_games = recommended_games.add(similar_user_games, fill_value=0)
+    game_scores = {}
+    for community in user_communities:
+        for game_index, score in pagerank_scores[str(community)].items():
+            game_index = int(game_index)
 
-
-    played_games = matrix.loc[user_id]
-    recommended_games = recommended_games[~recommended_games.index.isin(played_games[played_games > 0].index)]
-
-
-    recommended_games = recommended_games.sort_values(ascending=False)[:top_n]
+            if game_index not in user_index:    # If user has already played game, don't include it
+                game_scores[game_index] = score
     
-    return list(recommended_games.index)
+
+    recommended_games_indeces = sorted(game_scores, key=game_scores.get, reverse=True)[:top_n]
 
 
-# user_id = '' 
-# recommended_games = generate_recommendations(user_id)
-# print(f"Recommended games for user: {recommended_games}")
+    recommended_games = [games_df.iloc[game_index]['title'] for game_index in recommended_games_indeces if game_index < len(games_df)]
+
+    return recommended_games
+
+
+
+def main():
+    games_df = pd.read_csv('.\\csv\\clean.csv')
+
+    with open('.\\json\\test_users.json', 'r') as file:
+        test_users = json.load(file)
+
+    test_users = test_users[:10]
+
+    partition, pagerank_scores = load_data()
+
+    for user_id in test_users:
+        playtime = get_playtime(user_id, games_df)
+        
+        recommendations = get_recommendations(playtime, pagerank_scores, partition, games_df, top_n=5)
+        
+        print(f"Recommendations for user {user_id}: {recommendations}")
+
+if __name__ == "__main__":
+    main()

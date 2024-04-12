@@ -1,0 +1,38 @@
+.game-list-container {
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.game-list {
+  list-style: none;
+  flex-wrap: nowrap;
+  display: flex;
+}
+
+.game {
+  display: inline-block;
+  margin-right: 20px;
+  width: 266px;
+  text-align: center;
+}
+
+.game-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.game-title {
+  flex-grow: 1;
+}
+
+.add-btn {
+  background-color: #007bff;
+  cursor: pointer;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: large;
+}
