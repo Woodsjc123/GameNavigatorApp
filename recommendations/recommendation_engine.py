@@ -43,6 +43,8 @@ def get_recommendations(playtime, pagerank_scores, partition, games_df, top_n=5)
 
 
 
+
+# Testing the recommendations for test users
 def main():
     games_df = pd.read_csv('.\\csv\\clean.csv')
 
